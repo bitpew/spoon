@@ -55,6 +55,7 @@ public final class SpoonDeviceRunner {
   private final int adbTimeout;
   private final String className;
   private final String methodName;
+  private final Long testDelay;
   private final IRemoteAndroidTestRunner.TestSize testSize;
   private final File work;
   private final File junitReport;
@@ -82,7 +83,7 @@ public final class SpoonDeviceRunner {
    */
   SpoonDeviceRunner(File sdk, File apk, File testApk, File output, String serial, boolean debug,
       boolean noAnimations, int adbTimeout, String classpath,
-      SpoonInstrumentationInfo instrumentationInfo, String className, String methodName,
+      SpoonInstrumentationInfo instrumentationInfo, String className, String methodName, Long testDelay,
       IRemoteAndroidTestRunner.TestSize testSize, List<ITestRunListener> testRunListeners) {
     this.sdk = sdk;
     this.apk = apk;
@@ -93,6 +94,7 @@ public final class SpoonDeviceRunner {
     this.adbTimeout = adbTimeout;
     this.className = className;
     this.methodName = methodName;
+    this.testDelay = testDelay;
     this.testSize = testSize;
     this.classpath = classpath;
     this.instrumentationInfo = instrumentationInfo;
@@ -189,6 +191,11 @@ public final class SpoonDeviceRunner {
     try {
       logDebug(debug, "About to actually run tests for [%s]", serial);
       RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(testPackage, testRunner, device);
+
+      if(testDelay != null && testDelay >= 0) {
+        runner.addInstrumentationArg("delay_msec", testDelay.toString());
+      }
+
       runner.setMaxtimeToOutputResponse(adbTimeout);
       if (!Strings.isNullOrEmpty(className)) {
         if (Strings.isNullOrEmpty(methodName)) {

@@ -50,6 +50,7 @@ public final class SpoonRunner {
   private final int adbTimeout;
   private final String className;
   private final String methodName;
+  private final Long testDelay;
   private final Set<String> serials;
   private final String classpath;
   private final IRemoteAndroidTestRunner.TestSize testSize;
@@ -59,7 +60,7 @@ public final class SpoonRunner {
 
   private SpoonRunner(String title, File androidSdk, File applicationApk, File instrumentationApk,
       File output, boolean debug, boolean noAnimations, int adbTimeout, Set<String> serials,
-      String classpath, String className, String methodName,
+      String classpath, String className, String methodName, Long testDelay,
       IRemoteAndroidTestRunner.TestSize testSize, boolean failIfNoDeviceConnected,
       List<ITestRunListener> testRunListeners, boolean sequential) {
     this.title = title;
@@ -72,6 +73,7 @@ public final class SpoonRunner {
     this.adbTimeout = adbTimeout;
     this.className = className;
     this.methodName = methodName;
+    this.testDelay = testDelay;
     this.classpath = classpath;
     this.testSize = testSize;
     this.serials = ImmutableSet.copyOf(serials);
@@ -219,7 +221,7 @@ public final class SpoonRunner {
 
   private SpoonDeviceRunner getTestRunner(String serial, SpoonInstrumentationInfo testInfo) {
     return new SpoonDeviceRunner(androidSdk, applicationApk, instrumentationApk, output, serial,
-        debug, noAnimations, adbTimeout, classpath, testInfo, className, methodName, testSize,
+        debug, noAnimations, adbTimeout, classpath, testInfo, className, methodName, testDelay, testSize,
         testRunListeners);
   }
 
@@ -235,6 +237,7 @@ public final class SpoonRunner {
     private String classpath = System.getProperty("java.class.path");
     private String className;
     private String methodName;
+    private Long testDelay;
     private boolean noAnimations;
     private IRemoteAndroidTestRunner.TestSize testSize;
     private int adbTimeout;
@@ -353,6 +356,11 @@ public final class SpoonRunner {
       return this;
     }
 
+    public Builder setTestDelay(Long testDelay) {
+      this.testDelay = testDelay;
+      return this;
+    }
+
     public Builder addTestRunListener(ITestRunListener testRunListener) {
       checkNotNull(testRunListener, "TestRunListener cannot be null.");
       testRunListeners.add(testRunListener);
@@ -372,7 +380,7 @@ public final class SpoonRunner {
       }
 
       return new SpoonRunner(title, androidSdk, applicationApk, instrumentationApk, output, debug,
-          noAnimations, adbTimeout, serials, classpath, className, methodName, testSize,
+          noAnimations, adbTimeout, serials, classpath, className, methodName, testDelay, testSize,
           failIfNoDeviceConnected, testRunListeners, sequential);
     }
   }
@@ -395,6 +403,10 @@ public final class SpoonRunner {
     @Parameter(names = { "--method-name" },
         description = "Test method name to run (must also use --class-name)")
     public String methodName;
+
+    @Parameter(names = { "--test-delay" },
+        description = "Delay between test runs (milliseconds)")
+    public Long testDelay;
 
     @Parameter(names = { "--size" }, converter = TestSizeConverter.class,
         description = "Only run methods with corresponding size annotation (small, medium, large)")
@@ -489,6 +501,7 @@ public final class SpoonRunner {
         .setSequential(parsedArgs.sequential)
         .setClassName(parsedArgs.className)
         .setMethodName(parsedArgs.methodName)
+        .setTestDelay(parsedArgs.testDelay)
         .useAllAttachedDevices()
         .build();
 

@@ -99,6 +99,10 @@ public class RunMojo extends AbstractSpoonMojo {
   @Parameter(defaultValue = "${spoon.test.method}")
   private String methodName;
 
+  /** Delay between test runs (milliseconds). */
+  @Parameter
+  private Long testDelay;
+
   @Component
   private MavenProjectHelper projectHelper;
 
@@ -146,6 +150,10 @@ public class RunMojo extends AbstractSpoonMojo {
       }
     }
 
+    if (testDelay != null) {
+      log.debug("Test delay: " + testDelay);
+    }
+
     String classpath = getSpoonClasspath();
     log.debug("Classpath: " + classpath);
 
@@ -164,6 +172,7 @@ public class RunMojo extends AbstractSpoonMojo {
         .setClasspath(classpath)
         .setClassName(className)
         .setMethodName(methodName)
+        .setTestDelay(testDelay)
         .useAllAttachedDevices()
         .setFailIfNoDeviceConnected(failIfNoDeviceConnected)
         .setSequential(sequential)
